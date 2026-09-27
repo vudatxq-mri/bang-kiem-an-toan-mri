@@ -15,7 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initInstructionAccordion();
   initStaffLoginModal();
   initFormSubmission();
-
+  initPresetSelections();
+  
   // Áp dụng ngôn ngữ mặc định
   applyLanguage(currentLang);
 });
@@ -507,6 +508,99 @@ function initStaffLoginModal() {
           submitBtn.textContent = '🚀 ĐĂNG NHẬP HỆ THỐNG KTV';
         }
       }
+    });
+  }
+}
+let selectedScanAreas = new Set();
+
+async function initPresetSelections() {
+  const deptSelect = document.getElementById('sel-departmentRoom');
+  const deptChipsContainer = document.getElementById('dept-chips-container');
+  const inpDept = document.getElementById('inp-departmentRoom');
+  const scanChipsContainer = document.getElementById('scan-chips-container');
+  const inpScan = document.getElementById('inp-scanArea');
+
+  let settings = null;
+  try { settings = await CloudDB.getHospitalSettings(); } catch (e) {}
+
+  const depts = (settings && Array.isArray(settings.departments) && settings.departments.length > 0)
+    ? settings.departments
+    : ['Khoa Khám bệnh', 'Khoa Cấp cứu', 'Khoa Ngoại Thần kinh', 'Khoa Chấn thương Chỉnh hình'];
+
+  const scanAreas = (settings && Array.isArray(settings.scanAreas) && settings.scanAreas.length > 0)
+    ? settings.scanAreas
+    : ['MRI Sọ não', 'MRI Cột sống thắt lưng', 'MRI Cột sống cổ', 'MRI Khớp gối'];
+
+  function getScanIcon(n) {
+    n = n.toLowerCase();
+    if (n.includes('sọ') || n.includes('não') || n.includes('mra')) return '🧠';
+    if (n.includes('cột sống') || n.includes('lưng') || n.includes('cổ')) return '🦴';
+    if (n.includes('gối') || n.includes('chân')) return '🦵';
+    if (n.includes('vai') || n.includes('tay')) return '💪';
+    if (n.includes('háng')) return '🦴';
+    if (n.includes('bụng') || n.includes('chậu')) return '🫄';
+    if (n.includes('gan') || n.includes('mật')) return '🫁';
+    if (n.includes('vú')) return '🌸';
+    return '🔍';
+  }
+
+  if (deptSelect) {
+    deptSelect.innerHTML = '<option value="">-- Bấm chọn nhanh Khoa / Phòng gửi chụp --</option>';
+    depts.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d;
+      opt.textContent = d;
+      deptSelect.appendChild(opt);
+    });
+    deptSelect.addEventListener('change', () => {
+      if (deptSelect.value) {
+        inpDept.value = deptSelect.value;
+        if (deptChipsContainer) {
+          deptChipsContainer.querySelectorAll('.quick-chip').forEach(c => {
+            c.classList.toggle('active', c.dataset.val === deptSelect.value);
+          });
+        }
+      }
+    });
+  }
+
+  if (deptChipsContainer) {
+    deptChipsContainer.innerHTML = '';
+    depts.slice(0, 6).forEach(d => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'quick-chip';
+      chip.dataset.val = d;
+      chip.innerHTML = `<span class="chip-check">✓</span> <span>${d}</span>`;
+      chip.addEventListener('click', () => {
+        inpDept.value = d;
+        if (deptSelect) deptSelect.value = d;
+        deptChipsContainer.querySelectorAll('.quick-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+      });
+      deptChipsContainer.appendChild(chip);
+    });
+  }
+
+  if (scanChipsContainer) {
+    scanChipsContainer.innerHTML = '';
+    scanAreas.forEach(areaName => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'quick-chip';
+      chip.dataset.area = areaName;
+      chip.innerHTML = `<span class="chip-check">✓</span> <span>${getScanIcon(areaName)} ${areaName}</span>`;
+      chip.addEventListener('click', () => {
+        if (selectedScanAreas.has(areaName)) {
+          selectedScanAreas.delete(areaName);
+          chip.classList.remove('active');
+        } else {
+          selectedScanAreas.add(areaName);
+          chip.classList.add('active');
+        }
+        inpScan.value = Array.from(selectedScanAreas).join(', ');
+      });
+      scanChipsContainer.appendChild(chip);
     });
   }
 }
