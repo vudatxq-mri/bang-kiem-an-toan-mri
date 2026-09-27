@@ -414,6 +414,49 @@ body {
 }
 
 .toggle-btn.active {
+  .quick-chips-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 6px;
+  margin-bottom: 8px;
+}
+.quick-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease-in-out;
+  touch-action: manipulation;
+}
+.quick-chip:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+.quick-chip.active {
+  background: #e0f2fe;
+  border-color: #0284c7;
+  color: #0369a1;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(2, 132, 199, 0.2);
+}
+.quick-chip .chip-check {
+  font-size: 12px;
+  font-weight: 800;
+  color: #0284c7;
+  display: none;
+}
+.quick-chip.active .chip-check {
+  display: inline-block;
+}
   background: #f0f9ff;
   border-color: var(--primary-color);
   color: var(--primary-color);
